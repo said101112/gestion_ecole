@@ -71,7 +71,7 @@ button:hover {
 </head>
 <body>
  <div class="login-container">
- <form action="login.php" method="post" class="login-form">
+ <form action="Acces_BD/connexion.php" method="post" class="login-form">
  <h2>Connexion</h2>
  <div class="input-group">
  <label for="email">Email</label>

@@ -2,7 +2,7 @@
 session_start();
 
 function Connect() {
-    // Charger les paramètres de connexion
+    // Charger les paramètres depuis .env
     $env = parse_ini_file(__DIR__ . '/.env');
     $conn = new mysqli(
         $env['Serveur'],
@@ -21,27 +21,42 @@ function Connect() {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'] ?? '';
+    $hashed_password = md5($password);
 
-    // Connexion à la BD
     $conn = Connect();
 
-    // Préparer la requête pour éviter les injections SQL
-    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND password = ?");
-    $hashed_password = md5($password); // Mot de passe chiffré
+    // 🔹 1️⃣ Vérifier dans la table Etudiant
+    $stmt = $conn->prepare("SELECT * FROM Etudiant WHERE email = ? AND password = ?");
     $stmt->bind_param("ss", $email, $hashed_password);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Vérifier si un utilisateur existe
     if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        $_SESSION['email'] = $user['email'];
-        $_SESSION['role'] = $user['role'];
+        $etudiant = $result->fetch_assoc();
+        $_SESSION['email'] = $etudiant['email'];
+        $_SESSION['nom'] = $etudiant['nom'];
+        $_SESSION['role'] = 'etudiant';
         header("Location: ../IHM/accueil.php");
         exit();
-    } else {
-        echo "<p style='color:red; text-align:center;'>Email ou mot de passe incorrect</p>";
     }
+
+    // 🔹 2️⃣ Sinon, vérifier dans la table Prof
+    $stmt = $conn->prepare("SELECT * FROM Prof WHERE email = ? AND password = ?");
+    $stmt->bind_param("ss", $email, $hashed_password);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $prof = $result->fetch_assoc();
+        $_SESSION['email'] = $prof['email'];
+        $_SESSION['nom'] = $prof['nom'];
+        $_SESSION['role'] = 'prof';
+        header("Location: ../IHM/accueil.php");
+        exit();
+    }
+
+    // 🔹 3️⃣ Si aucune correspondance trouvée
+    echo "<p style='color:red; text-align:center;'>Email ou mot de passe incorrect</p>";
 
     $stmt->close();
     $conn->close();
