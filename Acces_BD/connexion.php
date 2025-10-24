@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn = Connect();
 
     // 🔹 1️⃣ Vérifier dans la table Etudiant
-    $stmt = $conn->prepare("SELECT * FROM Etudiant WHERE email = ? AND password = ?");
+    $stmt = $conn->prepare("SELECT * FROM etudiant WHERE email = ? AND password = ?");
     $stmt->bind_param("ss", $email, $hashed_password);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // 🔹 3️⃣ Si aucune correspondance trouvée
+    
     echo "<p style='color:red; text-align:center;'>Email ou mot de passe incorrect</p>";
 
     $stmt->close();
